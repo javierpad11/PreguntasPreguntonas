@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preguntas Preguntonas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(to right, #000000, #434343);
+            color: white;
+            margin: 0;
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 600px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        select, button {
+            font-size: 1.5em;
+            margin: 10px 0;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        select {
+            background: #fff;
+            color: #000;
+        }
+        button {
+            background: #ff4081;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #e91e63;
+        }
+        .hidden {
+            display: none;
+        }
+        .loading {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff4081;
+        }
+        .question-box {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .penitencia-text {
+            font-size: 1em;
+            color: #ffb3b3;
+            margin-top: 10px;
+        }
+        .back-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #ff4081;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .back-button:hover {
+            background: #e91e63;
+        }
+    </style>
+</head>
+<body>
+    <h1>Preguntas Preguntonas</h1>
+    <div class="container" id="setupScreen">
+        <label for="topics">Elige un tema:</label>
+        <select id="topics">
+            <option value="Pícaras">Pícaras</option>
+            <option value="Románticas">Románticas</option>
+            <option value="Pareja">Pareja</option>
+            <option value="Familia">Familia</option>
+            <option value="Amigos">Amigos</option>
+        </select>
+        <button onclick="startGame()">Comenzar</button>
+    </div>
+
+    <div class="container hidden" id="loadingScreen">
+        <p class="loading">🧐 Generando pregunta...</p>
+        <img src="https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif" width="200" alt="Cargando...">
+    </div>
+
+    <div class="container hidden" id="questionScreen">
+        <div class="question-box" id="question">Aquí aparecerán las preguntas...</div>
+        <p class="penitencia-text">Si el jugador no responde la pregunta, tendrá que realizar una penitencia.</p>
+        <button onclick="showLoading()">Siguiente Pregunta</button>
+        <button class="back-button" onclick="goToMenu()">⟵ Regresar</button>
+    </div>
+
+    <script>
+        const questions = {
+            "Pícaras": [
+                "¿Cuál crees que es mi mayor encanto que no puedes resistir?",
+                "Si tuvieras que describir nuestra química en una palabra, ¿cuál sería?",
+                "¿Qué es lo más atrevido que te gustaría que hiciéramos juntos?",
+                "Si tuvieras que adivinar qué pienso de ti en secreto, ¿qué sería?",
+                "¿Cuál ha sido el momento más emocionante que hemos compartido hasta ahora?",
+"¿Cuál ha sido el cumplido más atrevido que me has dicho en secreto?",
+"¿Si pudieras describir nuestra química con una película, cuál sería?",
+"¿Cuál es el momento más divertido que hemos compartido juntos?",
+"¿Qué piensas cuando te veo de esa manera especial?",
+"Si tuvieras que planear una cita inolvidable conmigo, ¿qué incluiría?",
+"¿Te atreverías a contarme un secreto que nunca me has dicho?",
+"¿Qué es lo primero que pensaste cuando nos vimos por primera vez?",
+"¿Cuál ha sido el mensaje más coqueto que me has enviado?",
+"¿Qué parte de nuestra historia te emociona más recordar?",
+"¿Cómo crees que sería un viaje romántico juntos?",
+"Si tuvieras que elegir un lugar inesperado para un beso, ¿dónde sería?",
+"¿Qué piensas de nuestro primer encuentro?",
+"¿Cuál crees que es mi gesto más encantador?",
+"¿Cómo describirías nuestra conexión en tres palabras?",
+"¿Cuál es tu recuerdo favorito de nosotros hasta ahora?",
+"¿Qué es lo que más te gusta de nuestra relación?",
+"Si tuvieras que hacerme una pregunta atrevida, ¿cuál sería?",
+"¿Cómo reaccionarías si te sorprendo con algo inesperado?",
+"¿Qué te gustaría que hiciéramos juntos que aún no hemos intentado?",
+"Si escribieras una carta para mí, ¿qué le pondrías?",
+"¿Cuál es la mirada que más te gusta de mí?",
+"¿Qué es lo que más disfrutas cuando estamos juntos?",
+"Si pudieras repetir una de nuestras citas, ¿cuál elegirías?",
+"¿Cuál crees que es nuestra mejor cualidad como pareja?",
+"¿Cuál es la parte de nuestra relación que más te emociona?",
+"¿Si pudieras llevarme a cualquier lugar, a dónde sería?",
+"¿Qué te hace sentir más cómodo cuando estamos juntos?",
+"¿Cómo describirías mi manera de demostrar afecto?",
+"¿Qué canción crees que nos representa mejor?",
+"¿Cuál ha sido el momento más espontáneo que hemos tenido?",
+"¿Qué opinas de la forma en la que nos conocimos?",
+"Si pudieras sorprenderme con algo hoy, ¿qué sería?",
+"¿Qué locura te gustaría hacer conmigo?",
+"¿Cuál ha sido el mejor cumplido que te he dado?",
+"Si tuvieras que pedirme un deseo, ¿qué sería?",
+"¿Cómo te imaginas nuestro futuro juntos?",
+"¿Cuál ha sido tu momento favorito conmigo hasta ahora?",
+"Si me tuvieras que describir a un amigo, ¿qué dirías?",
+"¿Cuál crees que es la mejor manera de hacernos reír juntos?",
+"¿Cómo crees que hemos cambiado desde que nos conocemos?",
+"Si nuestra relación fuera un libro, ¿cómo se llamaría?",
+"¿Cuál es el mejor halago que te he dicho y que te ha gustado?",
+"¿Qué lugar te gustaría explorar conmigo?",
+"¿Qué te gustaría que recordáramos siempre de esta etapa?",
+"¿Cómo describirías la química que tenemos?",
+"¿Cuál es la mejor sorpresa que podrías darme?",
+"Si tuvieras que describirme en una sola palabra, ¿cuál sería?",
+"¿Cómo crees que sería nuestra relación en 10 años?",
+"¿Qué detalle mío crees que me hace especial para ti?",
+"¿Si tuvieras que elegir una canción para dedicármela, cuál sería?",
+"¿Qué harías si te reto a decirme algo que nunca te has atrevido?",
+"¿Qué piensas cuando me ves de lejos sin que me dé cuenta?",
+"Si tuvieras que darme una puntuación del 1 al 10 en coqueteo, ¿cuánto me das?",
+"¿Cuál ha sido el momento en el que más te he puesto nervioso/a?",
+"Si tuvieras que darme un beso ahora, ¿dónde sería?",
+"¿Cuál ha sido el mensaje más atrevido que me has querido enviar pero no te atreviste?",
+"¿Qué es lo primero que piensas cuando escuchas mi nombre?",
+"Si pudiéramos repetir una de nuestras primeras citas, ¿cuál elegirías?",
+"¿Qué es lo que más te gusta de nuestra manera de mirarnos?",
+"¿Cuál crees que ha sido el momento más coqueto entre nosotros?",
+"Si tuvieras que describir mi sonrisa en una palabra, ¿cuál sería?",
+"¿Qué es lo primero que notaste de mí cuando nos conocimos?",
+"Si estuviéramos solos en una isla, ¿qué haríamos primero?",
+"¿Cuál ha sido tu pensamiento más atrevido sobre mí?",
+"Si pudieras cambiar algo de nuestra relación, ¿qué sería?",
+"¿Cuál ha sido el mejor cumplido que te he dado?",
+"¿Cómo describirías nuestra conexión en tres palabras?",
+"Si escribieras un mensaje misterioso para mí, ¿qué diría?",
+"¿Cuál ha sido tu fantasía más divertida conmigo?",
+"¿Si tuvieras que robarme algo, qué sería?",
+"¿Cuál es tu parte favorita de mi cuerpo?",
+"¿Si te propusiera un juego atrevido ahora, aceptarías?",
+"¿Qué crees que me gusta más de ti?",
+"¿Cuál es tu manera favorita de coquetear conmigo?",
+"Si tuvieras que elegir entre un beso largo o un abrazo fuerte, ¿cuál elegirías?",
+"¿Cómo reaccionarías si te sorprendiera con un plan inesperado esta noche?",
+"¿Qué cosa me harías hacer si tuvieras el control por un día?",
+"Si tuvieras que inventarnos un apodo secreto, ¿cuál sería?",
+"¿Qué es lo más atrevido que has imaginado hacer conmigo?",
+"¿Si estuviéramos en una cita a ciegas, cómo me reconocerías?",
+"¿Cuál es tu recuerdo más divertido de una cita conmigo?",
+"Si tuvieras que describir nuestra química con una comida, ¿cuál sería?",
+"¿Cuál ha sido el gesto más coqueto que he tenido contigo?",
+"Si solo tuviéramos 24 horas juntos, ¿cómo las aprovecharíamos?",
+"¿Qué palabra usarías para describir la forma en que me miras?",
+"¿Cuál es el halago que más te gusta escuchar de mí?",
+"¿Qué es lo más atrevido que has querido decirme pero no lo has hecho?",
+"Si tuvieras que adivinar qué me gusta más de ti, ¿qué sería?",
+"¿Qué es lo que más disfrutas de nuestra compañía?",
+"¿Cuál crees que es nuestra mejor cualidad como pareja?",
+"Si me dieras un reto divertido ahora, ¿cuál sería?",
+"¿Qué cosa pequeña que hago te vuelve loco/a?",
+"Si tuvieras que describir nuestro primer beso en una palabra, ¿cuál sería?",
+"¿Cuál es tu lugar ideal para una cita diferente conmigo?",
+"¿Si pudieras darme una sorpresa especial, qué harías?",
+"¿Qué es lo que más te hace sentir especial conmigo?",
+"Si pudiéramos estar en cualquier parte del mundo juntos ahora, ¿dónde sería?",
+"¿Qué piensas cuando recibes un mensaje mío inesperado?",
+"¿Cuál crees que es nuestro momento más coqueto hasta ahora?",
+"Si te pidiera que me digas un secreto, ¿te atreverías?",
+"¿Qué es lo que más te gusta de nuestra conexión?",
+            ],
+            "Románticas": [
+                "¿Cuál ha sido nuestro momento más romántico hasta ahora?",
+                "¿Qué es lo que más te gusta de nuestra relación?",
+                "¿Cuál sería tu cita perfecta conmigo?",
+                "¿Cómo describirías lo que sientes por mí en tres palabras?",
+                "¿Qué canción nos representa como pareja?",
+"¿Qué es lo que más te enamora de mí cada día?",
+"Si pudieras escribirnos una historia de amor, ¿cómo empezaría?",
+"¿Qué crees que nos hace una pareja especial?",
+"¿Cuál es el detalle más lindo que he tenido contigo?",
+"Si pudieras describir nuestra relación en tres palabras, ¿cuáles serían?",
+"¿Cuál es tu recuerdo favorito de nuestras citas?",
+"¿Cómo te sientes cuando estamos juntos?",
+"¿Cuál es la manera más linda en la que te he sorprendido?",
+"¿Qué momento de nuestra relación repetirías mil veces?",
+"Si tuvieras que elegir un momento especial nuestro para guardarlo para siempre, ¿cuál sería?",
+"¿Cómo imaginas nuestro futuro juntos?",
+"¿Qué es lo que más te gusta de nuestras conversaciones?",
+"Si me tuvieras que describir con un solo adjetivo, ¿cuál sería?",
+"¿Cuál ha sido tu cita favorita conmigo hasta ahora?",
+"¿Cómo te gusta que exprese mi amor por ti?",
+"¿Qué es lo primero que pensaste de mí cuando nos conocimos?",
+"¿Cuál es el mejor cumplido que me has dado?",
+"Si pudieras planear una cita perfecta para nosotros, ¿cómo sería?",
+"¿Cuál ha sido el momento más romántico que hemos vivido juntos?",
+"¿Qué crees que nos hace fuertes como pareja?",
+"¿Qué canción te recuerda a mí y por qué?",
+"Si nuestra relación fuera una película, ¿cómo se llamaría?",
+"¿Cuál es la cosa más tierna que he hecho por ti?",
+"¿Qué es lo que más te gusta de cómo te demuestro mi amor?",
+"¿Cómo crees que hemos crecido juntos desde que estamos juntos?",
+"¿Qué es lo que más valoras de nuestra relación?",
+"Si pudieras escribir una carta de amor para mí, ¿qué diría?",
+"¿Cuál es tu sueño más grande para nosotros?",
+"¿Qué es lo que más te gusta de nuestra conexión?",
+"¿Cómo te imaginas nuestra vida juntos dentro de 10 años?",
+"¿Cuál es tu lugar favorito para estar conmigo?",
+"¿Qué es lo más lindo que has aprendido de nuestra relación?",
+"Si tuvieras que elegir un momento nuestro para revivirlo siempre, ¿cuál sería?",
+"¿Qué piensas cuando me miras a los ojos?",
+"¿Cómo sería una escapada romántica perfecta para nosotros?",
+"¿Qué te hace sentir más amado/a por mí?",
+"¿Qué cosas pequeñas te hacen feliz cuando estamos juntos?",
+"Si nuestra historia fuera un libro, ¿qué título tendría?",
+"¿Qué es lo que más extrañas de mí cuando no estamos juntos?",
+"¿Qué fue lo que más te atrajo de mí al principio?",
+"¿Cómo crees que hemos superado juntos los momentos difíciles?",
+"¿Cuál es tu forma favorita de demostrarme tu amor?",
+"¿Qué crees que hace que nuestra relación sea única?",
+"Si pudieras sorprenderme con algo especial, ¿qué sería?",
+"¿Qué palabras te gustaría escuchar más seguido de mí?",
+"¿Cuál ha sido tu regalo favorito que te he dado?",
+"¿Cómo crees que podríamos hacer nuestra relación aún más fuerte?",
+"¿Qué es lo más bonito que recuerdas de nuestro primer beso?",
+"¿Cómo te gusta pasar el tiempo conmigo?",
+"Si me dedicaras una canción de amor, ¿cuál sería?",
+"¿Qué es lo que más te emociona de nuestro futuro juntos?",
+            ],
+            "Pareja": [
+                "¿Qué hábito mío te parece más adorable?",
+                "¿Cuál ha sido la mayor lección que has aprendido de nuestra relación?",
+                "¿Cómo te imaginas nuestro futuro juntos?",
+                "¿Qué lugar del mundo te gustaría visitar conmigo?",
+                "¿Qué es lo que más valoras de nuestra relación?",
+"¿Cuál es tu parte favorita de nuestra vida juntos?",
+"¿Cómo te sientes al despertar a mi lado cada día?",
+"¿Qué crees que hemos aprendido el uno del otro en este tiempo juntos?",
+"¿Cómo crees que hemos crecido como pareja desde que empezamos?",
+"¿Cuál es la mayor aventura que hemos vivido juntos?",
+"¿Qué es lo que más disfrutas hacer conmigo en nuestra rutina diaria?",
+"¿Cómo te gustaría que fuera nuestro hogar ideal?",
+"¿Qué es lo que más te hace sentir cómodo/a cuando estamos juntos?",
+"¿Cuál ha sido el reto más grande que hemos superado juntos?",
+"¿Qué tres cosas te hacen sentir agradecido/a por nuestra relación?",
+"¿Cómo imaginas nuestra vida en cinco años?",
+"¿Qué hábito mío te parece más adorable?",
+"¿Qué es lo que más valoras de nuestra relación?",
+"¿Cuál ha sido la mejor decisión que hemos tomado como pareja?",
+"¿Qué pequeño detalle mío te hace sonreír siempre?",
+"¿Qué actividad te gustaría que hiciéramos más seguido juntos?",
+"¿Qué es lo que más te hace sentir amado/a por mí?",
+"¿Cuál crees que es nuestro punto fuerte como pareja?",
+"¿Cómo podemos mejorar nuestra comunicación como pareja?",
+"¿Qué sueños compartimos que más te emocionan?",
+"¿Cuál es el mejor recuerdo que tenemos juntos?",
+"¿Qué lugar especial te gustaría visitar conmigo?",
+"¿Cómo definirías nuestra relación en una palabra?",
+"¿Qué es lo que más te gusta de la forma en que resolvemos problemas?",
+"¿Cómo crees que podemos apoyarnos mejor el uno al otro?",
+"¿Qué cosa simple de la vida contigo disfruto más?",
+"¿Cómo te imaginas celebrando nuestro próximo aniversario?",
+"¿Cuál ha sido el mejor consejo que me has dado en nuestra relación?",
+"¿Cómo crees que hemos crecido juntos emocionalmente?",
+"¿Qué es lo que más disfrutas de nuestra convivencia?",
+"¿Cómo podemos hacer nuestra relación aún más fuerte?",
+"¿Cuál ha sido el momento más divertido que hemos compartido?",
+"¿Cómo podemos hacer para sorprendernos más seguido?",
+"¿Cuál es el gesto más dulce que recuerdas que haya tenido contigo?",
+"¿Qué es lo más emocionante de construir un futuro juntos?",
+"¿Cómo crees que podemos ser mejores compañeros de vida?",
+"¿Qué valores compartimos que más te enorgullecen?",
+"¿Qué momento de nuestro día a día te hace feliz sin importar qué?",
+"¿Cómo te sientes cuando pensamos en el futuro juntos?",
+"¿Qué aspecto de nuestra relación te hace sentir más seguro/a?",
+"¿Cómo podemos apoyarnos más en nuestros proyectos individuales?",
+"¿Cuál crees que es nuestra mayor fortaleza como pareja?",
+"¿Qué es lo que más disfrutas de nuestras conversaciones diarias?",
+"¿Cómo podemos mantener la chispa viva en nuestra relación?",
+"¿Qué es lo que más te gusta de nuestras tradiciones como pareja?",
+"¿Cómo podemos asegurarnos de seguir creciendo juntos?",
+"¿Cuál es la mejor sorpresa que te he dado?",
+"¿Qué cosas nuevas te gustaría que intentáramos juntos?",
+"¿Cómo podemos mantener siempre una relación llena de alegría?",
+"¿Qué es lo más bonito de compartir la vida contigo?",
+            ],
+            "Familia": [
+                "¿Cuál es el mejor recuerdo familiar que tienes?",
+                "¿Qué tradición familiar te gusta más?",
+                "¿Cómo describirías a nuestra familia en una palabra?",
+                "¿Cuál es el consejo más valioso que te han dado en la familia?",
+                "¿Qué actividad familiar disfrutas más?",
+"¿Cuál es tu recuerdo familiar más especial?",
+"¿Qué tradición familiar disfrutas más?",
+"¿Cuál ha sido el mejor consejo que te ha dado un familiar?",
+"¿Cómo describirías a nuestra familia en tres palabras?",
+"¿Qué valor familiar consideras más importante?",
+"¿Cuál es la comida familiar que más te gusta compartir?",
+"¿Qué actividad familiar nunca puede faltar en una reunión?",
+"¿Quién es el más gracioso de la familia y por qué?",
+"¿Cuál ha sido el viaje familiar más divertido?",
+"¿Qué historia familiar siempre te hace reír?",
+"¿Cuál es la lección más valiosa que has aprendido de nuestra familia?",
+"¿Cómo podemos fortalecer nuestra relación familiar?",
+"¿Cuál es tu foto familiar favorita y por qué?",
+"¿Qué es lo que más te gusta de nuestra familia?",
+"¿Cómo te imaginas a nuestra familia en 10 años?",
+"¿Qué tradición familiar te gustaría empezar?",
+"¿Cuál es el mejor regalo que has recibido de un familiar?",
+"¿Qué es lo que más admiras de nuestra familia?",
+"¿Qué personaje de la familia tiene las mejores anécdotas?",
+"¿Cómo describirías una reunión familiar perfecta?",
+"¿Qué valores crees que nos representan como familia?",
+"¿Cuál es tu recuerdo favorito de una celebración familiar?",
+"¿Cuál ha sido el momento más emotivo que has vivido en familia?",
+"¿Cómo describirías nuestra casa familiar en una palabra?",
+"¿Qué familiar tiene las historias más interesantes?",
+"¿Cuál ha sido el logro familiar más importante para ti?",
+"¿Qué palabra crees que mejor define nuestra convivencia?",
+"¿Cómo podemos pasar más tiempo juntos como familia?",
+"¿Qué película o serie nos representa mejor como familia?",
+"¿Cuál es tu lugar favorito para compartir en familia?",
+"¿Qué haces cuando extrañas a la familia?",
+"¿Cuál es el mejor consejo que has dado a un familiar?",
+"¿Qué es lo primero que piensas cuando escuchas la palabra familia?",
+"¿Qué canción o música asocias con nuestra familia?",
+"¿Qué es lo que más extrañas cuando no estamos juntos?",
+"¿Qué familiar consideras un ejemplo a seguir y por qué?",
+"¿Cómo describirías nuestras cenas familiares?",
+"¿Cuál es tu historia familiar favorita de la infancia?",
+"¿Qué momento familiar ha sido el más divertido?",
+"¿Qué apodo familiar es el más gracioso?",
+"¿Cómo podemos hacer más especiales nuestras reuniones?",
+"¿Cuál es el mejor recuerdo de las fiestas familiares?",
+"¿Qué cosas pequeñas hacen única a nuestra familia?",
+"¿Qué costumbre familiar te gustaría mantener siempre?",
+"¿Qué es lo que más disfrutas cuando estamos todos juntos?",
+"¿Cómo definirías la relación entre hermanos/primos en la familia?",
+"¿Cuál es la mejor enseñanza que nuestros padres nos han dejado?",
+"¿Qué familiar tiene las mejores ocurrencias?",
+"¿Qué recuerdos de la infancia en familia atesoras más?",
+"¿Cómo podemos mejorar la comunicación familiar?",
+"¿Cuál es la mejor tradición navideña de la familia?",
+            ],
+            "Amigos": [
+                "¿Cuál es el momento más gracioso que hemos vivido juntos?",
+                "¿Qué locura te gustaría hacer conmigo?",
+                "¿Cuál es el mejor consejo que me has dado?",
+                "¿Si tuvieras que describirme en una palabra, cuál sería?",
+                "¿Qué nos hace una gran dupla de amigos?",
+"¿Quién de nosotros sería el primero en perderse en un viaje?",
+"¿Cuál ha sido la mejor anécdota que hemos vivido juntos?",
+"Si tuviéramos que hacer una competencia entre nosotros, ¿de qué sería?",
+"¿Quién es el más aventurero del grupo?",
+"¿Cuál ha sido el momento más vergonzoso que hemos vivido juntos?",
+"¿Quién es el más probable en llegar tarde a una reunión?",
+"Si organizáramos un viaje juntos, ¿a dónde iríamos?",
+"¿Quién es el más divertido del grupo y por qué?",
+"¿Cuál es nuestro chiste interno favorito?",
+"¿Si hiciéramos un reality show, de qué trataría?",
+"¿Quién es el alma de la fiesta en el grupo?",
+"¿Cuál ha sido la mejor fiesta en la que hemos estado juntos?",
+"¿Qué nos hace únicos como grupo de amigos?",
+"¿Quién es el más probable en olvidar una fecha importante?",
+"¿Cuál es la mejor tradición que tenemos como grupo?",
+"¿Cómo crees que cambiará nuestra amistad en 10 años?",
+"¿Qué locura grupal deberíamos hacer al menos una vez?",
+"¿Quién es el más serio del grupo?",
+"¿Cuál es la historia más épica que contamos siempre?",
+"¿Si fuéramos personajes de una serie, quién sería quién?",
+"¿Cuál es la canción que mejor representa nuestra amistad?",
+"¿Quién tiene las mejores ocurrencias en el grupo?",
+"¿Cuál ha sido el mejor viaje que hemos hecho juntos?",
+"¿Qué es lo que más valoramos de nuestra amistad?",
+"¿Si tuviéramos un negocio juntos, de qué sería?",
+"¿Quién tiene las historias más inverosímiles?",
+"¿Cuál es el mejor apodo que se ha inventado en el grupo?",
+"¿Quién es el primero en organizar un plan?",
+"¿Qué es lo más divertido que hemos hecho juntos?",
+"¿Quién es el más probable en hacer una locura inesperada?",
+"¿Cuál es el peor consejo que nos hemos dado como grupo?",
+"¿Qué haríamos si nos ganáramos la lotería juntos?",
+"¿Quién tiene la risa más contagiosa del grupo?",
+"¿Cuál es el mejor meme que nos representa?",
+"¿Si hiciéramos una cápsula del tiempo, qué incluiríamos?",
+"¿Quién es el más probable en quedarse dormido en una reunión?",
+"¿Cuál ha sido la mejor broma que hemos hecho juntos?",
+"¿Quién tiene más historias divertidas para contar?",
+"¿Cuál es la actividad que más disfrutamos juntos?",
+"¿Quién es el más organizado del grupo?",
+"¿Cuál ha sido la peor idea que hemos tenido?",
+"¿Qué nos hace el mejor grupo de amigos?",
+"¿Quién es el más probable en proponer un plan espontáneo?",
+"¿Qué cosa nunca falta cuando estamos juntos?",
+"¿Quién es el más competitivo del grupo?",
+"¿Cuál ha sido el momento más emocionante que hemos vivido juntos?",
+"¿Qué película representa mejor nuestra amistad?",
+"¿Cómo podemos hacer que nuestra amistad dure para siempre?",
+"¿Quién es el mejor anfitrión cuando nos reunimos?",
+"¿Cuál es el plan perfecto para pasarla bien juntos?",
+"¿Quién sería el primero en lanzarse a una aventura extrema?",
+            ]
+        };
+
+        function startGame() {
+            document.getElementById("setupScreen").classList.add("hidden");
+            showLoading();
+        }
+
+        function showLoading() {
+            document.getElementById("questionScreen").classList.add("hidden");
+            document.getElementById("loadingScreen").classList.remove("hidden");
+
+            setTimeout(() => {
+                fetchQuestion();
+                document.getElementById("loadingScreen").classList.add("hidden");
+                document.getElementById("questionScreen").classList.remove("hidden");
+            }, 1000);
+        }
+
+        function fetchQuestion() {
+            const topic = document.getElementById("topics").value;
+            const question = questions[topic][Math.floor(Math.random() * questions[topic].length)];
+            document.getElementById("question").innerText = question;
+        }
+
+        function goToMenu() {
+            document.getElementById("questionScreen").classList.add("hidden");
+            document.getElementById("setupScreen").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
